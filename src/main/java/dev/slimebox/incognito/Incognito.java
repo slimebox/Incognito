@@ -1,16 +1,21 @@
 package dev.slimebox.incognito;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import dev.slimebox.incognito.api.IncognitoAPI;
 import dev.slimebox.incognito.client.IncognitoConfigScreen;
+import dev.slimebox.incognito.client.IncognitoRenderer;
 import dev.slimebox.incognito.rename.Renamer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.ConfigGuiHandler;
-import net.minecraftforge.client.event.ClientChatReceivedEvent;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.RenderNameplateEvent;
+import net.minecraftforge.client.event.*;
+import net.minecraftforge.client.gui.ForgeIngameGui;
+import net.minecraftforge.client.gui.OverlayRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 /**
  * The Going Incognto main class.
@@ -47,6 +52,8 @@ public class Incognito {
     public static final String MODID = "incognito";
     public static ResourceLocation byMod(String name) { return new ResourceLocation(MODID, name); }
 
+    public static IncognitoAPI API;
+
     public Incognito() {
         ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class, () ->
                 new ConfigGuiHandler.ConfigGuiFactory(((minecraft, screen) -> new IncognitoConfigScreen(screen)))
@@ -55,10 +62,12 @@ public class Incognito {
         MinecraftForge.EVENT_BUS.addListener(this::onChat);
         MinecraftForge.EVENT_BUS.addListener(this::onLoad);
         MinecraftForge.EVENT_BUS.addListener(this::onNameplate);
+        MinecraftForge.EVENT_BUS.addListener(this::clientSetup);
 
         // Load the name pool
         IncognitoState.NAME_POOL = Lists.newArrayList("Narf", "cheezey_tiger", "AuspiciousFlammenwerfer");
 
+        API = new Renamer();
     }
 
     public void onChat(ClientChatReceivedEvent event) {
@@ -71,5 +80,9 @@ public class Incognito {
 
     public void onNameplate(RenderNameplateEvent event) {
         Renamer.renameNamePlate(event);
+    }
+
+    public void clientSetup(FMLClientSetupEvent event) {
+        OverlayRegistry.registerOverlayTop("incognito_streaming", IncognitoRenderer::renderOverlay);
     }
 }
