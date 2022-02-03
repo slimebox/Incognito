@@ -78,7 +78,10 @@ public final class Renamer implements IncognitoAPI {
     @Override
     public Component remapComponent(Component input) {
         // Remap siblings recursively
-        input.getSiblings().forEach(this::remapComponent);
+        List<Component> siblings = input.getSiblings();
+        for(int i = 0; i < siblings.size(); i++) {
+            siblings.set(i, remapComponent(siblings.get(i)));
+        }
 
         // If there's a text component, copy and edit
         // TODO: this will lose all prior formatting
@@ -98,7 +101,10 @@ public final class Renamer implements IncognitoAPI {
                     );
 
                     remapped.getSiblings().addAll(text.getSiblings());
+
+                    return remapped;
                 }
+
             }
         }
         if (input instanceof TranslatableComponent translatable) {
@@ -111,24 +117,13 @@ public final class Renamer implements IncognitoAPI {
                 FormattedText text = newParts.get(i);
                 if (text instanceof Component component) {
                     newParts.set(i, remapComponent(component));
+                } else {
+                    newParts.set(i, remapComponent(new TextComponent(text.getString())));
                 }
             }
             ObfuscationReflectionHelper.setPrivateValue(TranslatableComponent.class, translatable, newParts, "f_131301" + "_");
 
             return translatable;
-            /*
-            // Rename player
-            messageAuthorName = Incognito.API.remapPlayerName(messageAuthorName);
-
-            // Save player name
-            Component playerName = ((TextComponent) args[0]).getSiblings().get(0);
-            TextComponent newMessage = new TextComponent(messageAuthorName);
-            newMessage.withStyle(playerName.getStyle());
-            newMessage.withStyle(ChatFormatting.AQUA);
-
-            ((TextComponent) args[0]).getSiblings().set(0, newMessage);
-            */
-
         }
 
         return input;

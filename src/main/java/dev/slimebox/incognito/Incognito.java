@@ -16,6 +16,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * The Going Incognto main class.
@@ -62,7 +63,7 @@ public class Incognito {
         MinecraftForge.EVENT_BUS.addListener(this::onChat);
         MinecraftForge.EVENT_BUS.addListener(this::onLoad);
         MinecraftForge.EVENT_BUS.addListener(this::onNameplate);
-        MinecraftForge.EVENT_BUS.addListener(this::clientSetup);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
 
         // Load the name pool
         IncognitoState.NAME_POOL = Lists.newArrayList("Narf", "cheezey_tiger", "AuspiciousFlammenwerfer");
