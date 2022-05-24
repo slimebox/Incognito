@@ -7,6 +7,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.TextComponent;
@@ -15,10 +16,7 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderNameplateEvent;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 
 /**
@@ -29,7 +27,8 @@ import java.util.Locale;
  * @author Curle
  */
 public final class Renamer implements IncognitoAPI {
-    static private Collection<PlayerInfo> userListCache;
+    static private List<PlayerInfo> userListCache;
+    static private List<PlayerInfo> fixedPlayers = new ArrayList<>();
 
     /**
      * Fetch (and allocate, if it doesn't already exist) a name for the given player.
@@ -112,7 +111,19 @@ public final class Renamer implements IncognitoAPI {
             List<FormattedText> parts = ObfuscationReflectionHelper.getPrivateValue(TranslatableComponent.class, translatable, "f_131301" + "_");
             List<FormattedText> newParts = new ArrayList<>(parts);
 
-            // Need to index by number, so use a traditional loop..
+            // Server /say messages use "[%s] %s", so we need to transform args too.
+            Object[] args = translatable.getArgs();
+            // Need to index by number, so use a traditional loop
+            for (int i = 0; i < args.length; i++ ) {
+                Object text = args[i];
+                if (text instanceof Component component) {
+                    args[i] = remapComponent(component);
+                } else if (text instanceof String str){
+                    args[i] = remapComponent(new TextComponent(str));
+                }
+            }
+
+            // Need to index by number, so use a traditional loop here too
             for (int i = 0; i < newParts.size(); i++ ) {
                 FormattedText text = newParts.get(i);
                 if (text instanceof Component component) {
@@ -136,11 +147,14 @@ public final class Renamer implements IncognitoAPI {
      */
     public static void renameUserList() {
         if (!IncognitoState.ENABLED) return;
-        ClientPacketListener clientpacketlistener = Minecraft.getInstance().player.connection;
-        userListCache = clientpacketlistener.getOnlinePlayers();
+        ClientPacketListener clientpacketlistener = Minecraft.getInstance().getConnection();
+        userListCache = new ArrayList<>(clientpacketlistener.getOnlinePlayers());
 
         userListCache.forEach(player -> {
-            player.setTabListDisplayName(new TextComponent(Incognito.API.remapPlayer(player)).withStyle(ChatFormatting.BLUE));
+            if (!fixedPlayers.contains(player)) {
+                player.setTabListDisplayName(new TextComponent(Incognito.API.remapPlayer(player)).withStyle(ChatFormatting.BLUE));
+                fixedPlayers.add(player);
+            }
         });
     }
 

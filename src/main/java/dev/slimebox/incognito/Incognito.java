@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.slimebox.incognito.api.IncognitoAPI;
+import dev.slimebox.incognito.client.IncognitoClientEvents;
 import dev.slimebox.incognito.client.IncognitoConfigScreen;
 import dev.slimebox.incognito.client.IncognitoRenderer;
 import dev.slimebox.incognito.rename.Renamer;
@@ -56,34 +57,9 @@ public class Incognito {
     public static IncognitoAPI API;
 
     public Incognito() {
-        ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class, () ->
-                new ConfigGuiHandler.ConfigGuiFactory(((minecraft, screen) -> new IncognitoConfigScreen(screen)))
-        );
-
-        MinecraftForge.EVENT_BUS.addListener(this::onChat);
-        MinecraftForge.EVENT_BUS.addListener(this::onLoad);
-        MinecraftForge.EVENT_BUS.addListener(this::onNameplate);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-
         // Load the name pool
         IncognitoState.NAME_POOL = Lists.newArrayList("Narf", "cheezey_tiger", "AuspiciousFlammenwerfer");
 
         API = new Renamer();
-    }
-
-    public void onChat(ClientChatReceivedEvent event) {
-        Renamer.renameChatMessage(event);
-    }
-
-    public void onLoad(ClientPlayerNetworkEvent.LoggedInEvent event) {
-        Renamer.renameUserList();
-    }
-
-    public void onNameplate(RenderNameplateEvent event) {
-        Renamer.renameNamePlate(event);
-    }
-
-    public void clientSetup(FMLClientSetupEvent event) {
-        OverlayRegistry.registerOverlayTop("incognito_streaming", IncognitoRenderer::renderOverlay);
     }
 }

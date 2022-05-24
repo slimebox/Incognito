@@ -1,4 +1,10 @@
 {
   "incognito.gui.config": "Incognito Configuration",
-  "incognito.gui.enable": "Enable Incognito Mode"
+  "incognito.gui.enable": "Enable",
+  "incognito.gui.disable": "Disable",
+  "incognito.gui.toggle": "Features",
+
+  "incognito.state.current": "Incognito is currently %s.",
+  "incognito.state.enabled": "enabled",
+  "incognito.state.disabled": "disabled"
 }
