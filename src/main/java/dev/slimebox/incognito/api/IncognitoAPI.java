@@ -1,5 +1,6 @@
 package dev.slimebox.incognito.api;
 
+import com.mojang.authlib.GameProfile;
 import dev.slimebox.incognito.Incognito;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
@@ -40,7 +41,7 @@ public interface IncognitoAPI {
      * @param player the data of the player to rename
      * @return the mapped username to use in place of their actual name
      */
-    String remapPlayer(PlayerInfo player);
+    String remapPlayer(GameProfile player);
 
     /**
      * Process a block of text that may or may not contain a player name.
